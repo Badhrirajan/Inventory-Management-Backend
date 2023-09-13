@@ -2,6 +2,7 @@ const AdminRouter = require('express').Router()
 const Admin = require('../Models/admin')
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer')
 
 AdminRouter.post("/createadmin", async (req, res) => {
     const { username, email, password } = req.body;
@@ -44,5 +45,84 @@ AdminRouter.post("/adlogin", (req, res) => {
       }
     });
 });
+
+AdminRouter.post('/admindata', async (req,res) => {
+  const {token} = req.body;
+  try{
+    const admin = jwt.verify(token,'process.env.JWT_SECRET_KEY')
+    const adminemail = admin.email
+    Admin.findOne({email: adminemail}).then((data) => {
+      res.json({
+        message: "VERIFIED",
+        data: data
+      })
+    }).catch((err) => {
+      res.json({
+        message: "EXPIRED"
+      })
+    })
+  }catch(err){
+    console.log(err)
+  }
+})
+
+AdminRouter.post('/forgot-password', (req,res) => {
+  const {email} = req.body;
+  Admin.findOne({email})
+  .then(admin => {
+    if(!admin){
+      return res.json({
+        message: "User not existed"
+      })
+    }
+    else{
+    const token = jwt.sign({id: admin._id},`process.env.JWT_SECRET_KEY`,{expiresIn: "1d"})
+    var transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'badhrirajan2211@gmail.com',
+        pass: 'iswakqmzrwtefjfg'
+      }
+    });
+    const link = `http://localhost:3000/reset/${user._id}/${token}`
+    var mailOptions = {
+      from: 'badhrirajan2211@gmail.com',
+      to: email,
+      subject: 'Reset your Password',
+      text: 'Reset your password with below link',
+      html: `<a href="${link}">${link}</a>`
+    };
+    
+    transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        console.log(error);
+      } else {
+        res.json("Email sent successfully!!")
+      }
+    });
+  }
+  })
+})
+
+AdminRouter.post('/reset-password/:id/:token', (req,res) => {
+  const {id,token} = req.params
+  const {password} = req.body
+
+  jwt.verify(token,'process.env.JWT_SECRET_KEY',(err,decoded) => {
+    if(err){
+      res.json({
+        message: "Error"
+      })
+    } else{
+      bcrypt.hash(password, 10)
+      .then(hash => {
+        Admin.findByIdAndUpdate({_id:id},{password: hash})
+        .then(a => res.json("Password Updated Successfully!! Now try to login!!"))
+        .catch(err => res.json("Error"))
+      })
+      .catch(err => res.json("Error"))
+    }
+  })
+})
 
 module.exports = AdminRouter

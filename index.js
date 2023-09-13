@@ -3,7 +3,6 @@ const app = express()
 const cors = require('cors')
 const mongoose = require('mongoose')
 const AdminRouter = require('./Controllers/admincontroller')
-const UserRouter = require('./Controllers/usercontroller')
 const URL = 'mongodb+srv://Badhrirajan:Badhri2211@cluster0.gxfd2vs.mongodb.net/InventoryData'
 
 const port = 5000
@@ -27,9 +26,9 @@ app.get('/', (req,res) => {
         data: "API CREATED SUCCESSFULLY!!"
     })
 })
+
 app.use(cors())
 app.use(express.json())
-app.use('/', UserRouter)
 app.use('/', AdminRouter)
 
 Connect()
