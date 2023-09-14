@@ -31,7 +31,7 @@ AdminRouter.post("/adlogin", (req, res) => {
       if (admin) {
         bcrypt.compare(password, admin.password, (err, response) => {
           if (response) {
-            const token = jwt.sign({role: "admin"},'process.env.JWT_TOKEN',{expiresIn: '1d'})
+            const token = jwt.sign({email: email},'process.env.JWT_TOKEN',{expiresIn: '1d'})
             res.json({
               message: "Success",
               data: token
@@ -49,7 +49,7 @@ AdminRouter.post("/adlogin", (req, res) => {
 AdminRouter.post('/admindata', async (req,res) => {
   const {token} = req.body;
   try{
-    const admin = jwt.verify(token,'process.env.JWT_SECRET_KEY')
+    const admin = jwt.verify(token,'process.env.JWT_TOKEN')
     const adminemail = admin.email
     Admin.findOne({email: adminemail}).then((data) => {
       res.json({
@@ -76,7 +76,7 @@ AdminRouter.post('/forgot-password', (req,res) => {
       })
     }
     else{
-    const token = jwt.sign({id: admin._id},`process.env.JWT_SECRET_KEY`,{expiresIn: "1d"})
+    const token = jwt.sign({id: admin._id},`process.env.JWT_TOKEN`,{expiresIn: "1d"})
     var transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -84,7 +84,7 @@ AdminRouter.post('/forgot-password', (req,res) => {
         pass: 'iswakqmzrwtefjfg'
       }
     });
-    const link = `http://localhost:3000/reset/${user._id}/${token}`
+    const link = `http://localhost:3000/reset/${admin._id}/${token}`
     var mailOptions = {
       from: 'badhrirajan2211@gmail.com',
       to: email,
@@ -108,7 +108,7 @@ AdminRouter.post('/reset-password/:id/:token', (req,res) => {
   const {id,token} = req.params
   const {password} = req.body
 
-  jwt.verify(token,'process.env.JWT_SECRET_KEY',(err,decoded) => {
+  jwt.verify(token,'process.env.JWT_TOKEN',(err,decoded) => {
     if(err){
       res.json({
         message: "Error"
