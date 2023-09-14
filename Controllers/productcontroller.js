@@ -66,4 +66,14 @@ ProductRouter.delete('/deleteproduct/:id', (req,res) => {
     }
 })
 
+ProductRouter.get('/productcount', async (req,res) => {
+    try{
+        const item = await Product.find().count()
+        res.json(item)
+    }
+    catch(err){
+        res.json(err)
+    }
+})
+
 module.exports = ProductRouter
