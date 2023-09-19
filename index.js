@@ -20,7 +20,7 @@ async function Connect(){
     }
 }
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log('Server is Started in the port', port)
 })
 
