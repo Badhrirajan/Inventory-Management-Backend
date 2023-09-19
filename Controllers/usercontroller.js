@@ -1,23 +1,23 @@
-const AdminRouter = require('express').Router()
-const Admin = require('../Models/admin')
+const UserRouter = require('express').Router()
+const User = require('../Models/user')
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
 
-AdminRouter.post("/createadmin", async (req, res) => {
+UserRouter.post("/createuser", async (req, res) => {
     const { username, email, password } = req.body;
     const encryptedPassword = await bcrypt.hash(password, 10);
-    const admin = new Admin({
+    const user = new User({
       username,
       email,
       password: encryptedPassword,
     });
     try {
-      const oldadmin = await Admin.findOne({ email });
-      if (oldadmin) {
+      const olduser = await User.findOne({ email });
+      if (olduser) {
         res.json("User Already existing");
       } else {
-        admin.save();
+        user.save();
         res.json("Data Successfully Stored");
       }
     } catch (err) {
@@ -25,13 +25,13 @@ AdminRouter.post("/createadmin", async (req, res) => {
     }
 });
 
-AdminRouter.post("/adlogin", (req, res) => {
+UserRouter.post("/userlogin", (req, res) => {
     const { email, password } = req.body;
-    Admin.findOne({ email: email }).then((admin) => {
-      if (admin) {
-        bcrypt.compare(password, admin.password, (err, response) => {
+    User.findOne({ email: email }).then((user) => {
+      if (user) {
+        bcrypt.compare(password, user.password, (err, response) => {
           if (response) {
-            const token = jwt.sign({email: admin.email},'process.env.JWT_TOKEN',{expiresIn: '1d'})
+            const token = jwt.sign({email: user.email},'process.env.JWT_TOKEN',{expiresIn: '1d'})
             res.json({
               message: "Success",
               data: token
@@ -46,12 +46,12 @@ AdminRouter.post("/adlogin", (req, res) => {
     });
 });
 
-AdminRouter.post('/admindata', async (req,res) => {
+UserRouter.post('/userdata', async (req,res) => {
   const {token} = req.body;
   try{
-    const admin = jwt.verify(token,'process.env.JWT_TOKEN')
-    const adminemail = admin.email
-    Admin.findOne({email: adminemail}).then((data) => {
+    const user = jwt.verify(token,'process.env.JWT_TOKEN')
+    const useremail = user.email
+    User.findOne({email: useremail}).then((data) => {
       res.json({
         message: "VERIFIED",
         data: data
@@ -66,17 +66,17 @@ AdminRouter.post('/admindata', async (req,res) => {
   }
 })
 
-AdminRouter.post('/forgot-password', (req,res) => {
+UserRouter.post('/forgot-password', (req,res) => {
   const {email} = req.body;
-  Admin.findOne({email})
-  .then(admin => {
-    if(!admin){
+  User.findOne({email})
+  .then(user => {
+    if(!user){
       return res.json({
         message: "User not existed"
       })
     }
     else{
-    const token = jwt.sign({id: admin._id},`process.env.JWT_TOKEN`,{expiresIn: "1d"})
+    const token = jwt.sign({id: user._id},`process.env.JWT_TOKEN`,{expiresIn: "1d"})
     var transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -84,7 +84,7 @@ AdminRouter.post('/forgot-password', (req,res) => {
         pass: 'edgahaetnkzowfls'
       }
     });
-    const link = `http://localhost:3000/resetpassword/${admin._id}/${token}`
+    const link = `http://localhost:3000/reset/${User._id}/${token}`
     var mailOptions = {
       from: 'badhrirajan2211@gmail.com',
       to: email,
@@ -104,7 +104,7 @@ AdminRouter.post('/forgot-password', (req,res) => {
   })
 })
 
-AdminRouter.post('/reset-password/:id/:token', (req,res) => {
+UserRouter.post('/reset-password/:id/:token', (req,res) => {
   const {id,token} = req.params
   const {password} = req.body
 
@@ -116,7 +116,7 @@ AdminRouter.post('/reset-password/:id/:token', (req,res) => {
     } else{
       bcrypt.hash(password, 10)
       .then(hash => {
-        Admin.findByIdAndUpdate({_id:id},{password: hash})
+        User.findByIdAndUpdate({_id:id},{password: hash})
         .then(a => res.json("Password Updated Successfully!! Now try to login!!"))
         .catch(err => res.json("Error"))
       })
@@ -125,14 +125,24 @@ AdminRouter.post('/reset-password/:id/:token', (req,res) => {
   })
 })
 
-AdminRouter.get('/admincount', async (req,res) => {
+UserRouter.get('/getuser', async(req,res) => {
+    const user = await User.find()
   try{
-    const admin = await Admin.find().count()
-    res.json(admin)
-  }
-  catch(err){
-      res.json(err)
+     res.json(user)
+ }
+ catch (err) {
+     res.json(err)
+ }
+})
+
+UserRouter.get('/usercount', async(req,res) => {
+    try{
+        const user = await User.find().count()
+        res.json(user)
+    }
+    catch(err){
+        res.json(err)
     }
 })
 
-module.exports = AdminRouter
+module.exports = UserRouter

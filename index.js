@@ -4,6 +4,8 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const AdminRouter = require('./Controllers/admincontroller')
 const ProductRouter = require('./Controllers/productcontroller')
+const UserRouter = require('./Controllers/usercontroller')
+const OrderRouter = require('./Controllers/ordercontroller')
 const URL = 'mongodb+srv://Badhrirajan:Badhri2211@cluster0.gxfd2vs.mongodb.net/InventoryData'
 
 const port = 5000
@@ -32,6 +34,8 @@ app.use(cors())
 app.use(express.json())
 app.use('/', AdminRouter)
 app.use('/', ProductRouter)
+app.use('/',UserRouter)
+app.use('/',OrderRouter)
 
 Connect()
 
