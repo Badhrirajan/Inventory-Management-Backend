@@ -16,6 +16,16 @@ OrderRouter.post('/orderproduct', async (req,res) => {
     }
 })
 
+OrderRouter.get('/getorders', async(req,res) => {
+    try{
+        const order = await Order.find()
+        res.json(order)
+    }
+    catch(err){
+        res.json(err)
+    }
+})
+
 OrderRouter.get('/ordercount', async (req,res) => {
     try{
         const order = await Order.find().count()
