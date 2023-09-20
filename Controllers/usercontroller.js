@@ -84,7 +84,7 @@ UserRouter.post('/forgot-password', (req,res) => {
         pass: 'edgahaetnkzowfls'
       }
     });
-    const link = `http://localhost:3000/reset/${User._id}/${token}`
+    const link = `https://main--dulcet-otter-4e9c91.netlify.app/reset/${User._id}/${token}`
     var mailOptions = {
       from: 'badhrirajan2211@gmail.com',
       to: email,

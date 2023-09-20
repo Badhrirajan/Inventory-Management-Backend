@@ -84,7 +84,7 @@ AdminRouter.post('/forgot-password', (req,res) => {
         pass: 'edgahaetnkzowfls'
       }
     });
-    const link = `http://localhost:3000/resetpassword/${admin._id}/${token}`
+    const link = `https://main--dulcet-otter-4e9c91.netlify.app/resetpassword/${admin._id}/${token}`
     var mailOptions = {
       from: 'badhrirajan2211@gmail.com',
       to: email,
